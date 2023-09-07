@@ -1,7 +1,7 @@
 import { readLoop } from "./src/utils.ts";
-import { WireFormatInfo } from "./messages/WireFormatInfo.ts";
-import { Properties } from "./messages/BaseMessage.ts";
 import { dataType } from "./src/BinaryEncoder.ts";
+import { Properties } from "./src/messages/BaseMessage.ts";
+import { WireFormatInfo } from "./src/messages/WireFormatInfo.ts";
 
 //Create socket connection to ActiveMQ server
 const connection = await Deno.connect({

@@ -1,6 +1,6 @@
-import { WireFormatInfo } from "../messages/WireFormatInfo.ts";
 import { BinaryDecoder } from "./BinaryDecoder.ts";
-import { CommandType } from "./PacketEncoder.ts";
+import { CommandType } from "./messages/BaseMessage.ts";
+import { WireFormatInfo } from "./messages/WireFormatInfo.ts";
 
 export const readLoop = async (connection: Deno.TcpConn) => {
   const packetLengthBuffer = new Uint8Array(4);

@@ -1,8 +1,6 @@
-import { BinaryDecoder } from "../src/BinaryDecoder.ts";
-import { BinaryEncoder } from "../src/BinaryEncoder.ts";
-import { CommandType } from "../src/PacketEncoder.ts";
-import { uint8arrayToHexArray } from "../test.ts";
-import { BaseMessage, Properties } from "./BaseMessage.ts";
+import { BinaryDecoder } from "../BinaryDecoder.ts";
+import { BinaryEncoder } from "../BinaryEncoder.ts";
+import { BaseMessage, CommandType, Properties } from "./BaseMessage.ts";
 
 export class WireFormatInfo extends BaseMessage {
   public magic: Uint8Array;
