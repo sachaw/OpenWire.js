@@ -32,7 +32,9 @@ export class BinaryDecoder {
     }
 
     throw new Error(
-      `Invalid data type, expected ${dataType.bool} but got ${dataType[data]}`,
+      `Invalid data type, expected ${dataType[dataType.bool]} but got ${
+        dataType[data]
+      }`,
     );
   }
 
@@ -51,7 +53,9 @@ export class BinaryDecoder {
     }
 
     throw new Error(
-      `Invalid data type, expected ${dataType.byte} but got ${dataType[data]}`,
+      `Invalid data type, expected ${dataType[dataType.byte]} but got ${
+        dataType[data]
+      }`,
     );
   }
 
@@ -70,7 +74,9 @@ export class BinaryDecoder {
     }
 
     throw new Error(
-      `Invalid data type, expected ${dataType.char} but got ${dataType[data]}`,
+      `Invalid data type, expected ${dataType[dataType.char]} but got ${
+        dataType[data]
+      }`,
     );
   }
 
@@ -78,7 +84,7 @@ export class BinaryDecoder {
     const data = this.buffer[0];
 
     if (omitPrefix) {
-      this.buffer = this.buffer.slice(1);
+      this.buffer = this.buffer.slice(2);
       return data;
     }
 
@@ -90,7 +96,9 @@ export class BinaryDecoder {
     }
 
     throw new Error(
-      `Invalid data type, expected ${dataType.short} but got ${dataType[data]}`,
+      `Invalid data type, expected ${dataType[dataType.short]} but got ${
+        dataType[data]
+      }`,
     );
   }
 
@@ -112,7 +120,9 @@ export class BinaryDecoder {
     }
 
     throw new Error(
-      `Invalid data type, expected ${dataType.int} but got ${dataType[type]}`,
+      `Invalid data type, expected ${dataType[dataType.int]} but got ${
+        dataType[type]
+      }`,
     );
   }
 
@@ -132,7 +142,9 @@ export class BinaryDecoder {
     }
 
     throw new Error(
-      `Invalid data type, expected ${dataType.long} but got ${dataType[data]}`,
+      `Invalid data type, expected ${dataType[dataType.long]} but got ${
+        dataType[data]
+      }`,
     );
   }
 
@@ -152,7 +164,9 @@ export class BinaryDecoder {
     }
 
     throw new Error(
-      `Invalid data type, expected ${dataType.float} but got ${dataType[data]}`,
+      `Invalid data type, expected ${dataType[dataType.float]} but got ${
+        dataType[data]
+      }`,
     );
   }
 
@@ -172,7 +186,7 @@ export class BinaryDecoder {
     }
 
     throw new Error(
-      `Invalid data type, expected ${dataType.double} but got ${
+      `Invalid data type, expected ${dataType[dataType.double]} but got ${
         dataType[data]
       }`,
     );
@@ -200,7 +214,7 @@ export class BinaryDecoder {
     }
 
     throw new Error(
-      `Invalid data type, expected ${dataType.string} but got ${
+      `Invalid data type, expected ${dataType[dataType.string]} but got ${
         dataType[type]
       }`,
     );
