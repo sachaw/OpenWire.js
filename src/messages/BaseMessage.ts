@@ -75,7 +75,7 @@ export interface Property {
 }
 
 export abstract class BaseMessage {
-  public commandId: number;
+  public command: CommandType;
   public responseRequired: boolean;
   public properties: Properties;
 
@@ -83,7 +83,7 @@ export abstract class BaseMessage {
   public abstract decode(decoder: BinaryDecoder): void;
 
   constructor() {
-    this.commandId = 0;
+    this.command = CommandType.WIREFORMAT_INFO;
     this.responseRequired = false;
     this.properties = new Map();
   }

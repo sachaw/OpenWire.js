@@ -9,7 +9,7 @@ export class WireFormatInfo extends BaseMessage {
 
   constructor(properties?: Properties) {
     super();
-    this.commandId = CommandType.WIREFORMAT_INFO;
+    this.command = CommandType.WIREFORMAT_INFO;
     this.magic = new Uint8Array([
       0x41,
       0x63,
@@ -44,7 +44,7 @@ export class WireFormatInfo extends BaseMessage {
 
   public encode(): Uint8Array {
     const encoder = new BinaryEncoder();
-    encoder.addByte(this.commandId, true).addRaw(this.magic)
+    encoder.addByte(this.command, true).addRaw(this.magic)
       .addInt(
         this.version,
         true,
