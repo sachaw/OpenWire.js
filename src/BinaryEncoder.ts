@@ -1,14 +1,4 @@
-export enum dataType {
-  bool = 0x01,
-  byte = 0x02,
-  char = 0x03,
-  short = 0x04,
-  int = 0x05,
-  long = 0x06,
-  float = 0x07,
-  double = 0x08,
-  string = 0x09,
-}
+import { DataType } from "./messages/BaseMessage.js";
 
 export class BinaryEncoder {
   private buffer: Uint8Array;
@@ -31,56 +21,43 @@ export class BinaryEncoder {
       this.littleEndian,
     );
 
-    this.buffer = new Uint8Array([
-      ...packetLength,
-      ...this.buffer,
-    ]);
+    this.buffer = new Uint8Array([...packetLength, ...this.buffer]);
+
+    return this;
   }
 
-  private allocateArray(
-    size: number,
-    omitPrefix: boolean,
-    type?: dataType,
-  ) {
-    const arraySize = this.buffer.length + size + (omitPrefix ? 0 : 1) +
-      (type === dataType.string ? 2 : 0);
+  private allocateArray(size: number, omitPrefix: boolean, type?: DataType) {
+    const arraySize =
+      this.buffer.length +
+      size +
+      (omitPrefix ? 0 : 1) +
+      (type === DataType.String ? 2 : 0);
 
-    const newArray = new Uint8Array(
-      arraySize,
-    );
+    const newArray = new Uint8Array(arraySize);
 
     newArray.set(this.buffer);
 
     // Write dataType
     if (!omitPrefix && type) {
-      const cursor = newArray.length -
-        (size + (type === dataType.string ? 2 : 0) + (omitPrefix ? 0 : 1));
+      const cursor =
+        newArray.length -
+        (size + (type === DataType.String ? 2 : 0) + (omitPrefix ? 0 : 1));
 
-      newArray.set(
-        [type],
-        cursor,
-      );
+      newArray.set([type], cursor);
     }
 
     // Write size of string after the dataType
-    if (type === dataType.string) {
+    if (type === DataType.String) {
       const cursor = newArray.length - (size + 2);
       const view = new DataView(newArray.buffer);
-      view.setInt16(
-        cursor,
-        size,
-        this.littleEndian,
-      );
+      view.setInt16(cursor, size, this.littleEndian);
     }
 
     return newArray;
   }
 
-  public addBoolean(
-    value: boolean,
-    omitPrefix = false,
-  ): BinaryEncoder {
-    const newArray = this.allocateArray(1, omitPrefix, dataType.bool);
+  public addBoolean(value: boolean, omitPrefix = false): BinaryEncoder {
+    const newArray = this.allocateArray(1, omitPrefix, DataType.Bool);
     const view = new DataView(newArray.buffer);
 
     view.setUint8(newArray.length - 1, value ? 1 : 0);
@@ -89,15 +66,12 @@ export class BinaryEncoder {
     return this;
   }
 
-  public addByte(
-    value: number,
-    omitPrefix = false,
-  ): BinaryEncoder {
+  public addByte(value: number, omitPrefix = false): BinaryEncoder {
     if (value < 0 || value > 255 || !Number.isInteger(value)) {
       throw new Error("Value must be an integer between 0 and 255.");
     }
 
-    const newArray = this.allocateArray(1, omitPrefix, dataType.byte);
+    const newArray = this.allocateArray(1, omitPrefix, DataType.Byte);
     const view = new DataView(newArray.buffer);
 
     const cursor = newArray.length ? newArray.length - 1 : 0;
@@ -108,15 +82,12 @@ export class BinaryEncoder {
     return this;
   }
 
-  public addChar(
-    value: string,
-    omitPrefix = false,
-  ): BinaryEncoder {
+  public addChar(value: string, omitPrefix = false): BinaryEncoder {
     if (value.length !== 1) {
       throw new Error("Value must be a single-character string.");
     }
 
-    const newArray = this.allocateArray(2, omitPrefix, dataType.char);
+    const newArray = this.allocateArray(2, omitPrefix, DataType.Char);
     const view = new DataView(newArray.buffer);
     const codePoint = value.charCodeAt(0);
 
@@ -126,15 +97,12 @@ export class BinaryEncoder {
     return this;
   }
 
-  public addShort(
-    value: number,
-    omitPrefix = false,
-  ): BinaryEncoder {
+  public addShort(value: number, omitPrefix = false): BinaryEncoder {
     if (value < -32768 || value > 32767 || !Number.isInteger(value)) {
       throw new Error("Value must be an integer between -32768 and 32767.");
     }
 
-    const newArray = this.allocateArray(2, omitPrefix, dataType.short);
+    const newArray = this.allocateArray(2, omitPrefix, DataType.Short);
     const view = new DataView(newArray.buffer);
 
     view.setInt16(newArray.length - 2, value, this.littleEndian);
@@ -143,11 +111,8 @@ export class BinaryEncoder {
     return this;
   }
 
-  public addInt(
-    value: number,
-    omitPrefix = false,
-  ): BinaryEncoder {
-    const newArray = this.allocateArray(4, omitPrefix, dataType.int);
+  public addInt(value: number, omitPrefix = false): BinaryEncoder {
+    const newArray = this.allocateArray(4, omitPrefix, DataType.Int);
     const view = new DataView(newArray.buffer);
 
     view.setInt32(newArray.length - 4, value, this.littleEndian);
@@ -156,11 +121,8 @@ export class BinaryEncoder {
     return this;
   }
 
-  public addLong(
-    value: bigint,
-    omitPrefix = false,
-  ): BinaryEncoder {
-    const newArray = this.allocateArray(8, omitPrefix, dataType.long);
+  public addLong(value: bigint, omitPrefix = false): BinaryEncoder {
+    const newArray = this.allocateArray(8, omitPrefix, DataType.Long);
     const view = new DataView(newArray.buffer);
 
     view.setBigInt64(newArray.length - 8, value, this.littleEndian);
@@ -169,11 +131,8 @@ export class BinaryEncoder {
     return this;
   }
 
-  public addFloat(
-    value: number,
-    omitPrefix = false,
-  ): BinaryEncoder {
-    const newArray = this.allocateArray(4, omitPrefix, dataType.float);
+  public addFloat(value: number, omitPrefix = false): BinaryEncoder {
+    const newArray = this.allocateArray(4, omitPrefix, DataType.Float);
     const view = new DataView(newArray.buffer);
 
     view.setFloat32(newArray.length - 4, value, this.littleEndian);
@@ -182,11 +141,8 @@ export class BinaryEncoder {
     return this;
   }
 
-  public addDouble(
-    value: number,
-    omitPrefix = false,
-  ): BinaryEncoder {
-    const newArray = this.allocateArray(8, omitPrefix, dataType.double);
+  public addDouble(value: number, omitPrefix = false): BinaryEncoder {
+    const newArray = this.allocateArray(8, omitPrefix, DataType.Double);
     const view = new DataView(newArray.buffer);
 
     view.setFloat64(newArray.length - 8, value, this.littleEndian);
@@ -198,11 +154,12 @@ export class BinaryEncoder {
   public addString(
     value: string,
     omitPrefix = false,
+    omitStringSize = false,
   ): BinaryEncoder {
     const newArray = this.allocateArray(
       value.length,
       omitPrefix,
-      dataType.string,
+      DataType.String,
     );
 
     const view = new DataView(newArray.buffer);
@@ -210,22 +167,15 @@ export class BinaryEncoder {
     const cursor = newArray.length - value.length;
 
     for (let i = 0; i < value.length; i++) {
-      view.setUint8(
-        cursor + i,
-        value.charCodeAt(i),
-      );
+      view.setUint8(cursor + i, value.charCodeAt(i));
     }
     this.buffer = newArray;
 
     return this;
   }
 
-  public addRaw(
-    value: Uint8Array,
-  ): BinaryEncoder {
-    const newArray = new Uint8Array(
-      this.buffer.length + value.length,
-    );
+  public addRaw(value: Uint8Array): BinaryEncoder {
+    const newArray = new Uint8Array(this.buffer.length + value.length);
     newArray.set(this.buffer);
     newArray.set(value, newArray.length - value.length);
     this.buffer = newArray;

@@ -1,4 +1,4 @@
-import { dataType } from "./BinaryEncoder.ts";
+import { DataType } from "./messages/BaseMessage.js";
 
 export class BinaryDecoder {
   private buffer: Uint8Array;
@@ -25,15 +25,15 @@ export class BinaryDecoder {
       return data === 1;
     }
 
-    if (data === dataType.bool) {
+    if (data === DataType.Bool) {
       const value = this.buffer[1];
       this.buffer = this.buffer.slice(2);
       return value === 1;
     }
 
     throw new Error(
-      `Invalid data type, expected ${dataType[dataType.bool]} but got ${
-        dataType[data]
+      `Invalid data type, expected ${DataType[DataType.Bool]} but got ${
+        DataType[data]
       }`,
     );
   }
@@ -46,15 +46,15 @@ export class BinaryDecoder {
       return data;
     }
 
-    if (data === dataType.byte) {
+    if (data === DataType.Byte) {
       const value = this.buffer[1];
       this.buffer = this.buffer.slice(2);
       return value;
     }
 
     throw new Error(
-      `Invalid data type, expected ${dataType[dataType.byte]} but got ${
-        dataType[data]
+      `Invalid data type, expected ${DataType[DataType.Byte]} but got ${
+        DataType[data]
       }`,
     );
   }
@@ -67,15 +67,15 @@ export class BinaryDecoder {
       return String.fromCharCode(data);
     }
 
-    if (data === dataType.char) {
+    if (data === DataType.Char) {
       const value = String.fromCharCode(this.buffer[1]);
       this.buffer = this.buffer.slice(3);
       return value;
     }
 
     throw new Error(
-      `Invalid data type, expected ${dataType[dataType.char]} but got ${
-        dataType[data]
+      `Invalid data type, expected ${DataType[DataType.Char]} but got ${
+        DataType[data]
       }`,
     );
   }
@@ -88,7 +88,7 @@ export class BinaryDecoder {
       return data;
     }
 
-    if (data === dataType.short) {
+    if (data === DataType.Short) {
       const view = new DataView(this.buffer.buffer);
       const value = view.getInt16(1, this.littleEndian);
       this.buffer = this.buffer.slice(3);
@@ -96,8 +96,8 @@ export class BinaryDecoder {
     }
 
     throw new Error(
-      `Invalid data type, expected ${dataType[dataType.short]} but got ${
-        dataType[data]
+      `Invalid data type, expected ${DataType[DataType.Short]} but got ${
+        DataType[data]
       }`,
     );
   }
@@ -113,15 +113,15 @@ export class BinaryDecoder {
 
     const type = this.buffer[0];
 
-    if (type === dataType.int) {
+    if (type === DataType.Int) {
       const value = view.getInt32(1, this.littleEndian);
       this.buffer = this.buffer.slice(5);
       return value;
     }
 
     throw new Error(
-      `Invalid data type, expected ${dataType[dataType.int]} but got ${
-        dataType[type]
+      `Invalid data type, expected ${DataType[DataType.Int]} but got ${
+        DataType[type]
       }`,
     );
   }
@@ -134,7 +134,7 @@ export class BinaryDecoder {
       return BigInt(data);
     }
 
-    if (data === dataType.long) {
+    if (data === DataType.Long) {
       const view = new DataView(this.buffer.buffer);
       const value = view.getBigInt64(1, this.littleEndian);
       this.buffer = this.buffer.slice(9);
@@ -142,8 +142,8 @@ export class BinaryDecoder {
     }
 
     throw new Error(
-      `Invalid data type, expected ${dataType[dataType.long]} but got ${
-        dataType[data]
+      `Invalid data type, expected ${DataType[DataType.Long]} but got ${
+        DataType[data]
       }`,
     );
   }
@@ -156,7 +156,7 @@ export class BinaryDecoder {
       return data;
     }
 
-    if (data === dataType.float) {
+    if (data === DataType.Float) {
       const view = new DataView(this.buffer.buffer);
       const value = view.getFloat32(1, this.littleEndian);
       this.buffer = this.buffer.slice(5);
@@ -164,8 +164,8 @@ export class BinaryDecoder {
     }
 
     throw new Error(
-      `Invalid data type, expected ${dataType[dataType.float]} but got ${
-        dataType[data]
+      `Invalid data type, expected ${DataType[DataType.Float]} but got ${
+        DataType[data]
       }`,
     );
   }
@@ -178,7 +178,7 @@ export class BinaryDecoder {
       return data;
     }
 
-    if (data === dataType.double) {
+    if (data === DataType.Double) {
       const view = new DataView(this.buffer.buffer);
       const value = view.getFloat64(1, this.littleEndian);
       this.buffer = this.buffer.slice(9);
@@ -186,8 +186,8 @@ export class BinaryDecoder {
     }
 
     throw new Error(
-      `Invalid data type, expected ${dataType[dataType.double]} but got ${
-        dataType[data]
+      `Invalid data type, expected ${DataType[DataType.Double]} but got ${
+        DataType[data]
       }`,
     );
   }
@@ -204,18 +204,16 @@ export class BinaryDecoder {
 
     const type = this.buffer[0];
 
-    if (type === dataType.string) {
+    if (type === DataType.String) {
       const length = view.getInt16(1, this.littleEndian);
-      const value = String.fromCharCode(
-        ...this.buffer.slice(3, 3 + length),
-      );
+      const value = String.fromCharCode(...this.buffer.slice(3, 3 + length));
       this.buffer = this.buffer.slice(3 + length);
       return value;
     }
 
     throw new Error(
-      `Invalid data type, expected ${dataType[dataType.string]} but got ${
-        dataType[type]
+      `Invalid data type, expected ${DataType[DataType.String]} but got ${
+        DataType[type]
       }`,
     );
   }

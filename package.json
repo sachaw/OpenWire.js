@@ -1,0 +1,22 @@
+{
+  "name": "openwire.js",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "",
+  "main": "./dist/index.js",
+  "exports": "./dist/index.js",
+  "scripts": {
+    "dev": "tsx ./src/test2.ts",
+    "build": "tsc"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.10.4",
+    "biome": "^0.3.3",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.6.2",
+    "typescript": "^5.3.3"
+  }
+}

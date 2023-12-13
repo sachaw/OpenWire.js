@@ -1,227 +1,233 @@
-import { BinaryDecoder } from "../BinaryDecoder.ts";
-import { BinaryEncoder, dataType } from "../BinaryEncoder.ts";
+import { BinaryEncoder } from "../BinaryEncoder.js";
+import { Base } from "./Base.js";
+import { PrimitiveMap } from "./PrimitiveMap.js";
+import { WireFormatInfo } from "./WireFormatInfo.js";
 
-export type Properties = Map<string, Property>;
+interface BaseOpenWireField<T extends DataType> {
+  type: T;
+  version: number;
+}
+
+interface ExtendedOpenWireField<T extends ExtendedDataType> {
+  type: T;
+  auxilaryType: Properties;
+  version: number;
+}
+
+type OpenWireField<T extends CombinedDataType> = T extends DataType
+  ? BaseOpenWireField<T>
+  : T extends ExtendedDataType
+    ? ExtendedOpenWireField<T>
+    : never;
 
 export enum CommandType {
-  WIREFORMAT_INFO = 1,
-  BROKER_INFO = 2,
-  CONNECTION_INFO = 3,
-  SESSION_INFO = 4,
-  CONSUMER_INFO = 5,
-  PRODUCER_INFO = 6,
-  TRANSACTION_INFO = 7,
-  DESTINATION_INFO = 8,
-  REMOVE_SUBSCRIPTION_INFO = 9,
-  KEEP_ALIVE_INFO = 10,
-  SHUTDOWN_INFO = 11,
-  REMOVE_INFO = 12,
-  CONTROL_COMMAND = 14,
-  FLUSH_COMMAND = 15,
-  CONNECTION_ERROR = 16,
-  CONSUMER_CONTROL = 17,
-  CONNECTION_CONTROL = 18,
-  MESSAGE_DISPATCH = 21,
-  MESSAGE_ACK = 22,
-  ACTIVEMQ_MESSAGE = 23,
-  ACTIVEMQ_BYTES_MESSAGE = 24,
-  ACTIVEMQ_MAP_MESSAGE = 25,
-  ACTIVEMQ_OBJECT_MESSAGE = 26,
-  ACTIVEMQ_STREAM_MESSAGE = 27,
-  ACTIVEMQ_TEXT_MESSAGE = 28,
-  RESPONSE = 30,
-  EXCEPTION_RESPONSE = 31,
-  DATA_RESPONSE = 32,
-  DATA_ARRAY_RESPONSE = 33,
-  INTEGER_RESPONSE = 34,
-  DISCOVERY_EVENT = 40,
-  JOURNAL_ACK = 50,
-  JOURNAL_REMOVE = 52,
-  JOURNAL_TRACE = 53,
-  JOURNAL_TRANSACTION = 54,
-  DURABLE_SUBSCRIPTION_INFO = 55,
-  PARTIAL_COMMAND = 60,
-  PARTIAL_LAST_COMMAND = 61,
-  REPLAY = 65,
-  BYTE_TYPE = 70,
-  CHAR_TYPE = 71,
-  SHORT_TYPE = 72,
-  INTEGER_TYPE = 73,
-  LONG_TYPE = 74,
-  DOUBLE_TYPE = 75,
-  FLOAT_TYPE = 76,
-  STRING_TYPE = 77,
-  BOOLEAN_TYPE = 78,
-  BYTE_ARRAY_TYPE = 79,
-  MESSAGE_DISPATCH_NOTIFICATION = 90,
-  NETWORK_BRIDGE_FILTER = 91,
-  ACTIVEMQ_QUEUE = 100,
-  ACTIVEMQ_TOPIC = 101,
-  ACTIVEMQ_TEMP_QUEUE = 102,
-  ACTIVEMQ_TEMP_TOPIC = 103,
-  MESSAGE_ID = 110,
-  ACTIVEMQ_LOCAL_TRANSACTION_ID = 111,
-  ACTIVEMQ_XA_TRANSACTION_ID = 112,
-  CONNECTION_ID = 120,
-  SESSION_ID = 121,
-  CONSUMER_ID = 122,
-  PRODUCER_ID = 123,
-  BROKER_ID = 124,
+  WireformatInfo = 1,
+  BrokerInfo = 2,
+  ConnectionInfo = 3,
+  SessionInfo = 4,
+  ConsumerInfo = 5,
+  ProducerInfo = 6,
+  TransactionInfo = 7,
+  DestinationInfo = 8,
+  RemoveSubscriptionInfo = 9,
+  KeepAliveInfo = 10,
+  ShutdownInfo = 11,
+  RemoveInfo = 12,
+  ControlCommand = 14,
+  FlushCommand = 15,
+  ConnectionError = 16,
+  ConsumerControl = 17,
+  ConnectionControl = 18,
+  MessageDispatch = 21,
+  MessageAck = 22,
+  ActiveMqMessage = 23,
+  ActiveMqBytesMessage = 24,
+  ActiveMqMapMessage = 25,
+  ActiveMqObjectMessage = 26,
+  ActiveMqStreamMessage = 27,
+  ActiveMqTextMessage = 28,
+  Response = 30,
+  ExceptionResponse = 31,
+  DataResponse = 32,
+  DataArrayResponse = 33,
+  IntegerResponse = 34,
+  DiscoveryEvent = 40,
+  JournalAck = 50,
+  JournalRemove = 52,
+  JournalTrace = 53,
+  JournalTransaction = 54,
+  DurableSubscriptionInfo = 55,
+  PartialCommand = 60,
+  PartialLastCommand = 61,
+  Replay = 65,
+  ByteType = 70,
+  CharType = 71,
+  ShortType = 72,
+  IntegerType = 73,
+  LongType = 74,
+  DoubleType = 75,
+  FloatType = 76,
+  StringType = 77,
+  BooleanType = 78,
+  ByteArrayType = 79,
+  MessageDispatchNotification = 90,
+  NetworkBridgeFilter = 91,
+  ActiveMqQueue = 100,
+  ActiveMqTopic = 101,
+  ActiveMqTempQueue = 102,
+  ActiveMqTempTopic = 103,
+  MessageId = 110,
+  ActiveMqLocalTransactionId = 111,
+  ActiveMqXaTransactionId = 112,
+  ConnectionId = 120,
+  SessionId = 121,
+  ConsimerId = 122,
+  ProducerId = 123,
+  BrokerId = 124,
 }
 
-export interface Property {
-  type: dataType;
-  value: number | string | boolean | bigint;
+export enum DataType {
+  Bool = 0x01,
+  Byte = 0x02,
+  Char = 0x03,
+  Short = 0x04,
+  Int = 0x05,
+  Long = 0x06,
+  Float = 0x07,
+  Double = 0x08,
+  String = 0x09,
+  Raw = 0x0a,
 }
 
-export abstract class BaseMessage {
-  public command: CommandType;
-  public responseRequired: boolean;
-  public properties: Properties;
+export enum ExtendedDataType {
+  //start at 0x0b
+  WireFormatInfo = 0x0b,
+  PrimitiveMap = 0x0c,
+}
 
-  public abstract encode(): Uint8Array;
-  public abstract decode(decoder: BinaryDecoder): void;
+export type CombinedDataType = DataType | ExtendedDataType;
 
-  constructor() {
-    this.command = CommandType.WIREFORMAT_INFO;
-    this.responseRequired = false;
-    this.properties = new Map();
+export interface DataTypeMappings<T extends Properties = Properties> {
+  [DataType.Bool]: boolean;
+  [DataType.Byte]: number;
+  [DataType.Char]: string;
+  [DataType.Short]: number;
+  [DataType.Int]: number;
+  [DataType.Long]: bigint;
+  [DataType.Float]: number;
+  [DataType.Double]: number;
+  [DataType.String]: string;
+  [DataType.Raw]: Uint8Array;
+  [ExtendedDataType.WireFormatInfo]: WireFormatInfo;
+  [ExtendedDataType.PrimitiveMap]: Data<MessageFields<T>>;
+}
+
+export type MessageFields<T extends Properties> = {
+  [Key in keyof T]: OpenWireField<T[Key]>;
+};
+
+export type Properties = Record<string, CombinedDataType>;
+
+export type Data<T extends MessageFields<Properties>> = {
+  [Key in keyof T]: T[Key] extends ExtendedOpenWireField<infer U>
+    ? DataTypeMappings<T[Key]["auxilaryType"]>[U]
+    : DataTypeMappings[T[Key]["type"]];
+};
+
+export abstract class BaseMessage<
+  T extends MessageFields<Properties>,
+> extends Base {
+  structure: T;
+  values?: Data<T>;
+  protected abstract commandId: CommandType;
+  protected abstract responseRequired: boolean;
+
+  constructor(structure: T, values?: Data<T>) {
+    super();
+    this.structure = structure;
+    this.values = values;
   }
 
-  public decodeProperties(decoder: BinaryDecoder) {
-    //read properties size
-    const size = decoder.readInt(true);
-
-    for (let i = 0; i < size; i++) {
-      const name = decoder.readString(true);
-      const type = decoder.sampleBytes(1)[0];
-
-      switch (type) {
-        case dataType.bool:
-          this.properties.set(name, {
-            type: dataType.bool,
-            value: decoder.readBoolean(),
-          });
-          break;
-        case dataType.byte:
-          this.properties.set(
-            name,
-            {
-              type: dataType.byte,
-              value: decoder.readByte(),
-            },
-          );
-          break;
-        case dataType.char:
-          this.properties.set(
-            name,
-            {
-              type: dataType.char,
-              value: decoder.readChar(),
-            },
-          );
-          break;
-        case dataType.short:
-          this.properties.set(
-            name,
-            {
-              type: dataType.short,
-              value: decoder.readShort(),
-            },
-          );
-          break;
-        case dataType.int:
-          this.properties.set(
-            name,
-            {
-              type: dataType.int,
-              value: decoder.readInt(),
-            },
-          );
-          break;
-        case dataType.long:
-          this.properties.set(
-            name,
-            {
-              type: dataType.long,
-              value: decoder.readLong(),
-            },
-          );
-          break;
-        case dataType.float:
-          this.properties.set(
-            name,
-            {
-              type: dataType.float,
-              value: decoder.readFloat(),
-            },
-          );
-          break;
-        case dataType.double:
-          this.properties.set(
-            name,
-            {
-              type: dataType.double,
-              value: decoder.readDouble(),
-            },
-          );
-          break;
-        case dataType.string:
-          this.properties.set(
-            name,
-            {
-              type: dataType.string,
-              value: decoder.readString(),
-            },
-          );
-          break;
-      }
+  public encode(): Uint8Array {
+    if (!this.values) {
+      throw new Error("No values to encode");
     }
-  }
-
-  public encodeProperties(): Uint8Array {
     const encoder = new BinaryEncoder();
-    encoder.addInt(this.properties.size, true);
 
-    for (const property of this.properties) {
-      const [name, value] = property;
+    encoder.addByte(this.commandId, true);
 
-      //write property name
-      encoder.addString(name, true);
+    for (const field in this.structure) {
+      const value = this.values[field];
+      const fieldInfo = this.structure[field];
 
-      switch (value.type) {
-        case dataType.bool:
-          encoder.addBoolean(value.value as boolean);
+      switch (fieldInfo.type) {
+        case DataType.Bool: {
+          encoder.addBoolean(value as boolean, true);
           break;
-        case dataType.byte:
-          encoder.addByte(value.value as number);
+        }
+
+        case DataType.Byte: {
+          encoder.addByte(value as number, true);
           break;
-        case dataType.char:
-          encoder.addChar(value.value as string);
+        }
+
+        case DataType.Char: {
+          encoder.addChar(value as string, true);
           break;
-        case dataType.short:
-          encoder.addShort(value.value as number);
+        }
+
+        case DataType.Short: {
+          encoder.addShort(value as number, true);
           break;
-        case dataType.int:
-          encoder.addInt(value.value as number);
+        }
+
+        case DataType.Int: {
+          encoder.addInt(value as number, true);
           break;
-        case dataType.long:
-          encoder.addLong(value.value as bigint);
+        }
+
+        case DataType.Long: {
+          encoder.addLong(value as bigint, true);
           break;
-        case dataType.float:
-          encoder.addFloat(value.value as number);
+        }
+
+        case DataType.Float: {
+          encoder.addFloat(value as number, true);
           break;
-        case dataType.double:
-          encoder.addDouble(value.value as number);
+        }
+
+        case DataType.Double: {
+          encoder.addDouble(value as number, true);
           break;
-        case dataType.string:
-          encoder.addString(value.value as string);
+        }
+
+        case DataType.String: {
+          encoder.addString(value as string, true);
           break;
+        }
+
+        case DataType.Raw: {
+          encoder.addRaw(value as Uint8Array);
+          break;
+        }
+
+        case ExtendedDataType.PrimitiveMap: {
+          const map = new PrimitiveMap(fieldInfo.auxilaryType, value);
+          encoder.addRaw(map.encode());
+          break;
+        }
+
+        default: {
+          console.log(fieldInfo.type);
+
+          throw new Error("Invalid data type");
+        }
       }
     }
+    return encoder.prefixSize().getBuffer();
+  }
 
-    encoder.prefixSize();
-
-    return encoder.getBuffer();
+  public decode(data: Uint8Array): Data<T> {
+    throw new Error("Method not implemented.");
   }
 }
